@@ -1,0 +1,696 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberAttack</title><style>
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: #000;
+    font-family: Consolas, "Courier New", monospace;
+}
+
+.screen {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+#start {
+    display: block;
+    background-image: url("Start Watching.jpg");
+    cursor: pointer;
+}
+
+#startLabel {
+    position: absolute;
+    left: 50%;
+    bottom: 8%;
+    transform: translateX(-50%);
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: clamp(20px, 4vw, 34px);
+    font-weight: bold;
+    text-align: center;
+    text-shadow: 0 2px 12px #000, 0 0 10px #000;
+    white-space: nowrap;
+    animation: pulse 1.5s infinite;
+}
+
+#countdownScreen {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+    color: white;
+}
+
+.count-number {
+    font-family: Arial, sans-serif;
+    font-size: clamp(120px, 35vw, 300px);
+    font-weight: 900;
+    animation: countZoom 0.9s ease-out;
+    text-shadow: 0 0 25px white;
+}
+
+#malware {
+    background-image: url("Malware.jpg");
+}
+
+#hacking {
+    background-image: url("Hacking.jpg");
+}
+
+#upload {
+    background-image:
+        linear-gradient(#000b, #000b),
+        url("Hacking.jpg");
+    color: #00ff66;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 20px;
+}
+
+#gotcha {
+    background-image:
+        linear-gradient(#0008, #000b),
+        url("gotcha.jpg");
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    color: white;
+    padding: 20px;
+}
+
+#gotcha h1 {
+    margin: 0 0 12px;
+    font-family: Arial, sans-serif;
+    font-size: clamp(50px, 12vw, 110px);
+    text-shadow: 0 0 15px #ff004c, 0 0 35px #ff004c;
+    animation: revealPulse 1.2s infinite;
+}
+
+#gotcha .reveal {
+    font-family: Arial, sans-serif;
+    font-size: clamp(24px, 5vw, 48px);
+    font-weight: bold;
+}
+
+#gotcha .credits {
+    font-family: Arial, sans-serif;
+    font-size: clamp(16px, 3vw, 25px);
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+#terminal {
+    position: absolute;
+    inset: 0;
+    padding: 16px;
+    color: #00ff66;
+    background: linear-gradient(90deg, #000b, #0004);
+    font-size: clamp(12px, 1.7vw, 19px);
+    line-height: 1.45;
+    text-shadow: 0 0 6px #00ff66;
+    white-space: pre-wrap;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}
+
+#terminal::after {
+    content: "▋";
+    animation: blink 0.6s infinite;
+}
+
+#malware::after,
+#hacking::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 3px,
+        #0005 4px
+    );
+    animation: scan 5s linear infinite;
+}
+
+/* Added animated malware code overlay */
+#malwareCode {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    color: #00ff66;
+    font-family: Consolas, monospace;
+    font-size: clamp(12px, 1.5vw, 18px);
+    line-height: 1.5;
+    text-shadow: 0 0 8px #00ff66;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        #001b0870,
+        transparent
+    );
+}
+
+.malware-column {
+    position: absolute;
+    top: -120%;
+    white-space: pre;
+    overflow-wrap: anywhere;
+    opacity: 0.8;
+    animation: malwareFall linear infinite;
+}
+
+.malware-status {
+    position: absolute;
+    left: 18px;
+    bottom: 18px;
+    max-width: 90%;
+    color: #ff3030;
+    background: #000b;
+    padding: 8px 12px;
+    font-size: clamp(12px, 1.5vw, 18px);
+    text-shadow: 0 0 8px red;
+    animation: blink 0.6s infinite;
+    z-index: 3;
+    pointer-events: none;
+}
+
+#redFlash {
+    position: absolute;
+    inset: 0;
+    background: red;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 2;
+}
+
+#malware .warningMark {
+    position: absolute;
+    top: 5%;
+    right: 5%;
+    color: #ff2525;
+    font-family: Arial, sans-serif;
+    font-weight: 900;
+    font-size: clamp(30px, 6vw, 70px);
+    text-shadow: 0 0 15px red;
+    animation: blink 0.5s infinite;
+    z-index: 3;
+}
+
+#uploadTitle {
+    color: #ff2525;
+    font-size: clamp(25px, 5vw, 50px);
+    text-align: center;
+    text-shadow: 0 0 15px red;
+}
+
+#progressOuter {
+    width: min(85vw, 650px);
+    height: 28px;
+    border: 2px solid #00ff66;
+    margin: 20px auto;
+    background: #000;
+    box-shadow: 0 0 15px #00ff6688;
+}
+
+#progressInner {
+    width: 0%;
+    height: 100%;
+    background: #00ff66;
+    box-shadow: 0 0 18px #00ff66;
+    transition: width 0.15s linear;
+}
+
+#uploadPercent {
+    font-size: clamp(30px, 7vw, 65px);
+    text-align: center;
+}
+
+#uploadText {
+    font-size: clamp(13px, 2vw, 20px);
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+@keyframes blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0.25; }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.06); }
+}
+
+@keyframes revealPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+}
+
+@keyframes countZoom {
+    0% { opacity: 0; transform: scale(2.5); }
+    30% { opacity: 1; }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes scan {
+    from { transform: translateY(-10%); }
+    to { transform: translateY(10%); }
+}
+
+@keyframes glitch {
+    0% { transform: translate(0); filter: none; }
+    25% { transform: translate(5px, -2px); filter: hue-rotate(90deg); }
+    50% { transform: translate(-4px, 2px); filter: contrast(1.5); }
+    75% { transform: translate(2px, 1px); filter: hue-rotate(-60deg); }
+    100% { transform: translate(0); filter: none; }
+}
+
+@keyframes malwareFall {
+    from { transform: translateY(0); }
+    to { transform: translateY(230vh); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+    }
+}
+</style></head><body><!-- Start Watching screen --><section class="screen" id="start" aria-label="Start Watching">
+    <div id="startLabel">START WATCHING</div>
+</section><!-- White countdown --><section class="screen" id="countdownScreen">
+    <div class="count-number" id="countNumber">3</div>
+</section><!-- Malware screen --><section class="screen" id="malware">
+    <div class="warningMark">⚠</div>
+    <div id="redFlash"></div>
+    <div id="malwareCode"></div>
+    <div class="malware-status" id="malwareStatus">
+        SYSTEM SCAN IN PROGRESS...
+    </div>
+</section><!-- Hacking screen --><section class="screen" id="hacking">
+    <div id="terminal"></div>
+</section><!-- Fake upload screen --><section class="screen" id="upload">
+    <div id="uploadTitle">DATA TRANSFER</div>
+    <div id="uploadText">Preparing visual sequence...</div>
+    <div id="progressOuter">
+        <div id="progressInner"></div>
+    </div>
+    <div id="uploadPercent">0%</div>
+</section><!-- Gotcha screen --><section class="screen" id="gotcha">
+    <h1>GOTCHA! 😂</h1>
+    <div class="reveal">IT'S A PRANK!</div>
+    <p class="credits">
+        Prank created by<br>
+        <strong>Marlon Belarmino Mahusay</strong><br>
+        Facebook: Marlon Mahusay<br>
+        Page: Amigong Kuya Marlz
+    </p>
+</section><script>
+const $ = id => document.getElementById(id);
+
+let started = false;
+let audioContext = null;
+let soundEnabled = false;
+let timers = [];
+let intervals = [];
+
+function later(fn, ms) {
+    const id = setTimeout(fn, ms);
+    timers.push(id);
+    return id;
+}
+
+function every(fn, ms) {
+    const id = setInterval(fn, ms);
+    intervals.push(id);
+    return id;
+}
+
+function show(id) {
+    document.querySelectorAll(".screen").forEach(screen => {
+        screen.style.display = "none";
+    });
+
+    const target = $(id);
+
+    if (
+        id === "countdownScreen" ||
+        id === "upload" ||
+        id === "gotcha"
+    ) {
+        target.style.display = "flex";
+    } else {
+        target.style.display = "block";
+    }
+}
+
+function initSound() {
+    try {
+        audioContext = new (
+            window.AudioContext ||
+            window.webkitAudioContext
+        )();
+
+        soundEnabled = true;
+
+        if (audioContext.state === "suspended") {
+            audioContext.resume();
+        }
+    } catch (error) {
+        soundEnabled = false;
+    }
+}
+
+function tone(
+    freq = 440,
+    duration = 0.12,
+    type = "sine",
+    volume = 0.08
+) {
+    if (!soundEnabled || !audioContext) return;
+
+    try {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+
+        oscillator.type = type;
+
+        oscillator.frequency.setValueAtTime(
+            freq,
+            audioContext.currentTime
+        );
+
+        gain.gain.setValueAtTime(
+            volume,
+            audioContext.currentTime
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            audioContext.currentTime + duration
+        );
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + duration);
+    } catch (error) {}
+}
+
+function beep() {
+    tone(720, 0.09, "square", 0.045);
+}
+
+function alarm() {
+    tone(880, 0.2, "sawtooth", 0.06);
+
+    later(() => {
+        tone(520, 0.22, "sawtooth", 0.06);
+    }, 230);
+}
+
+function typeSound() {
+    tone(
+        550 + Math.random() * 300,
+        0.035,
+        "square",
+        0.018
+    );
+}
+
+function dramaticSound() {
+    tone(160, 0.55, "sawtooth", 0.09);
+
+    later(() => {
+        tone(90, 0.7, "triangle", 0.08);
+    }, 180);
+
+    later(() => {
+        tone(65, 0.9, "sawtooth", 0.05);
+    }, 350);
+}
+
+/* Added animated malware code generator */
+function createMalwareCode() {
+    const container = $("malwareCode");
+
+    if (!container || container.dataset.ready === "yes") {
+        return;
+    }
+
+    container.dataset.ready = "yes";
+
+    const width = window.innerWidth;
+    const columnCount = Math.min(
+        24,
+        Math.ceil(width / 55)
+    );
+
+    const symbols = "0123456789ABCDEF<>[]{}#$%&";
+
+    for (let i = 0; i < columnCount; i++) {
+        const column = document.createElement("div");
+
+        column.className = "malware-column";
+
+        column.style.left =
+            (i * 100 / columnCount) + "%";
+
+        column.style.animationDuration =
+            (5 + Math.random() * 8) + "s";
+
+        column.style.animationDelay =
+            (-Math.random() * 10) + "s";
+
+        column.style.opacity =
+            (0.25 + Math.random() * 0.6).toFixed(2);
+
+        let code = "";
+
+        for (let j = 0; j < 35; j++) {
+            for (let k = 0; k < 4; k++) {
+                code += symbols[
+                    Math.floor(Math.random() * symbols.length)
+                ];
+            }
+
+            code += "\n";
+        }
+
+        column.textContent = code;
+        container.appendChild(column);
+    }
+}
+
+function startSequence() {
+    if (started) return;
+
+    started = true;
+
+    initSound();
+    dramaticSound();
+
+    show("countdownScreen");
+
+    let count = 3;
+
+    $("countNumber").textContent = count;
+    tone(650, 0.2, "sine", 0.1);
+
+    const countdownTimer = every(() => {
+        count--;
+
+        if (count > 0) {
+            $("countNumber").textContent = count;
+
+            $("countNumber").style.animation = "none";
+            void $("countNumber").offsetWidth;
+
+            $("countNumber").style.animation =
+                "countZoom 0.9s ease-out";
+
+            tone(650, 0.2, "sine", 0.1);
+        } else {
+            clearInterval(countdownTimer);
+
+            tone(900, 0.45, "square", 0.08);
+
+            later(runMalware, 500);
+        }
+    }, 1000);
+}
+
+function runMalware() {
+    show("malware");
+
+    dramaticSound();
+    createMalwareCode();
+
+    const malware = $("malware");
+    const flash = $("redFlash");
+
+    // Decorative glitches and warning flashes.
+    every(() => {
+        malware.classList.add("glitch");
+        flash.style.opacity = "0.18";
+
+        alarm();
+
+        later(() => {
+            malware.classList.remove("glitch");
+            flash.style.opacity = "0";
+        }, 180);
+    }, 1600);
+
+    const statusMessages = [
+        "SYSTEM SCAN IN PROGRESS...",
+        "ANALYZING SIMULATED DATA...",
+        "CHECKING VIRTUAL SYSTEM NODES...",
+        "PREPARING NEXT SEQUENCE..."
+    ];
+
+    let statusIndex = 0;
+
+    every(() => {
+        statusIndex =
+            (statusIndex + 1) % statusMessages.length;
+
+        $("malwareStatus").textContent =
+            statusMessages[statusIndex];
+    }, 1100);
+
+    later(runHacking, 6500);
+}
+
+function runHacking() {
+    show("hacking");
+
+    tone(440, 0.25, "square", 0.05);
+
+    const lines = [
+        "[SYSTEM] Initializing visual sequence...",
+        "[SCAN] Checking fictional system nodes...",
+        "[SCAN] C:\\System\\Cache ... simulated",
+        "[SCAN] C:\\Users\\Guest\\Documents ... simulated",
+        "[SCAN] Temporary data index ... simulated",
+        "[NETWORK] Establishing demo connection...",
+        "[ACCESS] Simulated access check...",
+        "[PROCESS] Reading sample file names...",
+        "[PROCESS] Analyzing fictional data...",
+        "[SECURITY] Visual sequence in progress...",
+        "[TRANSFER] Preparing demo transfer...",
+        "[SYSTEM] Starting animated transfer..."
+    ];
+
+    let index = 0;
+
+    const terminal = $("terminal");
+
+    function addLine() {
+        if (index < lines.length) {
+            terminal.textContent +=
+                "> " + lines[index] + "\n";
+
+            terminal.scrollTop = terminal.scrollHeight;
+
+            typeSound();
+
+            index++;
+
+            later(addLine, 450);
+        } else {
+            later(runUpload, 700);
+        }
+    }
+
+    addLine();
+}
+
+function runUpload() {
+    show("upload");
+
+    dramaticSound();
+
+    let progress = 0;
+
+    const fakeNames = [
+        "Preparing visual data...",
+        "Scanning demo items...",
+        "Transferring simulated packets...",
+        "Verifying visual sequence...",
+        "Finishing animation..."
+    ];
+
+    const uploadTimer = every(() => {
+        progress += 2;
+
+        $("progressInner").style.width =
+            progress + "%";
+
+        $("uploadPercent").textContent =
+            progress + "%";
+
+        const nameIndex = Math.min(
+            fakeNames.length - 1,
+            Math.floor(progress / 22)
+        );
+
+        $("uploadText").textContent =
+            fakeNames[nameIndex];
+
+        if (progress % 10 === 0) {
+            beep();
+        }
+
+        if (progress >= 100) {
+            clearInterval(uploadTimer);
+
+            tone(1000, 0.35, "sine", 0.08);
+
+            later(showGotcha, 1200);
+        }
+    }, 140);
+}
+
+function showGotcha() {
+    show("gotcha");
+
+    tone(660, 0.18, "sine", 0.08);
+
+    later(() => {
+        tone(880, 0.35, "sine", 0.08);
+    }, 180);
+}
+
+$("start").addEventListener("click", startSequence);
+
+$("start").addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        startSequence();
+    }
+});
+
+show("start");
+</script></body>
+</html>
